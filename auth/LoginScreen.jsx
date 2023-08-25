@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "react-native-elements";
 import Toast from "react-native-toast-message";
 import { useAppContext } from "../context/AppContext";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const LoginScreen = ({ navigation }) => {
   const { auth, setAuth } = useAppContext();
@@ -63,18 +62,27 @@ export const LoginScreen = ({ navigation }) => {
             setEmailError("");
           }}
         />
-        <Input
-          placeholder="Password"
-          onChangeText={(text) => setPassword(text)}
-          value={password}
-          secureTextEntry
-        />
+        <View>
+          <Input
+            placeholder="Password"
+            onChangeText={(text) => setPassword(text)}
+            value={password}
+            secureTextEntry
+          />
+          <Text
+            style={{ color: "#158CB6", marginTop: -25, marginLeft: 9 }}
+            onPress={() => navigation.navigate("ForgetPassword")}
+          >
+            Forgot Password?
+          </Text>
+        </View>
         <TouchableOpacity
           onPress={handleLogin}
           disabled={!email || !password}
           style={{
             width: "95%",
             padding: 10,
+            marginTop: 20,
             borderRadius: 4,
             alignSelf: "center",
             alignItems: "center",

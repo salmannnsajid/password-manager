@@ -129,3 +129,9 @@ export const HomeScreen = ({ navigation }) => {
     </>
   );
 };
+HomeScreen.navigationOptions = {
+  title: "Homeee",
+  headerRight: () => <>Yo</>,
+};
+
+console.log(HomeScreen);

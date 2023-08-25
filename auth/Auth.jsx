@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useNavigation } from "@react-navigation/native";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -7,22 +7,16 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 export const AuthScreen = () => {
   const navigation = useNavigation();
   const { auth, setAuth } = useAppContext();
+  const [allowFingerPrint, setAllowFingerPrint] = useState(false);
 
   const checkIsBiometric = async () => {
     const isBiometricAvailable = await LocalAuthentication.hasHardwareAsync();
     const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
     if (isBiometricAvailable && isEnrolled) {
-      // Biometric authentication is available and user has enrolled.
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Authenticate with your biometric",
-      });
-      if (result.success) {
-        setAuth({ ...auth, isLoggedIn: true });
-        navigation.navigate("Root");
-      }
+      setAllowFingerPrint(true);
     } else {
-      // Biometric authentication is not available or user is not enrolled.
+      setAllowFingerPrint(false);
     }
   };
 
@@ -35,6 +29,16 @@ export const AuthScreen = () => {
   };
   const handleSignUp = () => {
     navigation.navigate("SignUp");
+  };
+
+  const handleBiometricLogin = async () => {
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate with your biometric",
+    });
+    if (result.success) {
+      setAuth({ ...auth, isLoggedIn: true });
+      navigation.navigate("Root");
+    }
   };
 
   return (
@@ -68,6 +72,24 @@ export const AuthScreen = () => {
       >
         <Text style={{ fontSize: 16 }}>Sign In</Text>
       </TouchableOpacity>
+      {allowFingerPrint ? (
+        <TouchableOpacity
+          style={{
+            padding: 10,
+            width: "80%",
+            marginTop: 10,
+            borderWidth: 2,
+            borderRadius: 4,
+            alignItems: "center",
+            borderColor: "#158CB6",
+          }}
+          onPress={handleBiometricLogin}
+        >
+          <Text style={{ fontSize: 16 }}>Biometric Login</Text>
+        </TouchableOpacity>
+      ) : (
+        ""
+      )}
       <TouchableOpacity
         onPress={handleSignUp}
         style={{

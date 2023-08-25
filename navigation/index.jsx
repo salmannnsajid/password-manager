@@ -1,15 +1,17 @@
 import React from "react";
 import { StatusBar } from "react-native";
+import { AuthScreen } from "../auth/Auth";
 import { LoginScreen } from "../auth/LoginScreen";
+import { SignUpScreen } from "../auth/SignUpScreen";
 import { HomeScreen } from "../components/HomeScreen";
 import { EditScreen } from "../components/EditScreen";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { CreateScreen } from "../components/CreateScreen";
 import { DetailScreen } from "../components/DetailScreen";
+import { ForgetPasswordScreen } from "../auth/ForgetPasswordScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { AuthScreen } from "../auth/Auth";
-import { SignUpScreen } from "../auth/SignUpScreen";
+import { LogoutButton } from "../components/LogoutButton";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -42,6 +44,7 @@ function Root() {
           headerTitleStyle: {
             fontWeight: "bold",
           },
+          headerRight: () => <LogoutButton />,
         }}
       />
       <Tab.Screen
@@ -56,6 +59,7 @@ function Root() {
           headerTitleStyle: {
             fontWeight: "bold",
           },
+          headerRight: () => <LogoutButton />,
         }}
       />
       <Tab.Screen
@@ -70,6 +74,7 @@ function Root() {
             fontWeight: "bold",
           },
           tabBarButton: () => null,
+          headerRight: () => <LogoutButton />,
         }}
       />
       <Tab.Screen
@@ -84,6 +89,7 @@ function Root() {
             fontWeight: "bold",
           },
           tabBarButton: () => null,
+          headerRight: () => <LogoutButton />,
         }}
       />
     </Tab.Navigator>
@@ -103,6 +109,11 @@ export const Navigation = () => {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ForgetPassword"
+          component={ForgetPasswordScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
