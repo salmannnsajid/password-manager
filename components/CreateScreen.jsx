@@ -7,12 +7,14 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import db from "@react-native-firebase/database";
 
 export const CreateScreen = ({ navigation }) => {
-  const { globalState, setGlobalState } = useAppContext();
+  const { authData, setAuthData } = useAppContext();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     account: "",
@@ -37,16 +39,27 @@ export const CreateScreen = ({ navigation }) => {
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true);
     const uniqueId = uuid.v4();
-    try {
-      let data = [...globalState, { ...formData, id: uniqueId }];
-      setGlobalState([...data]);
-      AsyncStorage.setItem("passwords-array", JSON.stringify(data));
-    } catch (error) {
-      console.log("Error storing data:", error);
+    let updatedData = [];
+    if (authData?.records?.length) {
+      updatedData = [...authData.records, { ...formData, id: uniqueId }];
+    } else {
+      updatedData = [{ ...formData, id: uniqueId }];
     }
-    setFormData({ name: "", account: "", password: "", details: "" });
-    navigation.navigate("Home");
+    db()
+      .ref(`/users/${authData.uid}`)
+      .update({ records: updatedData })
+      .then(() => {
+        setAuthData({ ...authData, records: updatedData });
+        setFormData({ name: "", account: "", password: "", details: "" });
+        navigation.navigate("Home");
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        console.error("Error adding new record:", error);
+      });
   };
 
   return (
@@ -87,15 +100,25 @@ export const CreateScreen = ({ navigation }) => {
           borderRadius: 10,
           alignItems: "center",
           backgroundColor:
-            !validation.name || !validation.account || !validation.password
+            !validation.name ||
+            !validation.account ||
+            !validation.password ||
+            isLoading
               ? "grey"
               : "#158CB6",
         }}
         disabled={
-          !validation.name || !validation.account || !validation.password
+          !validation.name ||
+          !validation.account ||
+          !validation.password ||
+          isLoading
         }
       >
-        <Text style={{ color: "white" }}>Create</Text>
+        {isLoading ? (
+          <ActivityIndicator color="white" size="small" />
+        ) : (
+          <Text style={{ color: "white" }}>Create</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

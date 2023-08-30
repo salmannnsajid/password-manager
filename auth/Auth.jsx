@@ -6,7 +6,7 @@ import { View, Text, Image, TouchableOpacity } from "react-native";
 
 export const AuthScreen = () => {
   const navigation = useNavigation();
-  const { auth, setAuth } = useAppContext();
+  const { authData, setAuthData } = useAppContext();
   const [allowFingerPrint, setAllowFingerPrint] = useState(false);
 
   const checkIsBiometric = async () => {
@@ -22,7 +22,7 @@ export const AuthScreen = () => {
 
   useLayoutEffect(() => {
     checkIsBiometric();
-  }, [auth]);
+  }, [authData]);
 
   const handleLogin = () => {
     navigation.navigate("Login");
@@ -36,7 +36,7 @@ export const AuthScreen = () => {
       promptMessage: "Authenticate with your biometric",
     });
     if (result.success) {
-      setAuth({ ...auth, isLoggedIn: true });
+      setAuthData({ ...authData, isLoggedIn: true });
       navigation.navigate("Root");
     }
   };
@@ -70,9 +70,9 @@ export const AuthScreen = () => {
           borderColor: "#158CB6",
         }}
       >
-        <Text style={{ fontSize: 16 }}>Sign In</Text>
+        <Text style={{ fontSize: 16 }}>Login</Text>
       </TouchableOpacity>
-      {allowFingerPrint ? (
+      {allowFingerPrint && authData?.email ? (
         <TouchableOpacity
           style={{
             padding: 10,

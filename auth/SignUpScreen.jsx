@@ -1,38 +1,61 @@
 import React, { useState } from "react";
-import Toast from "react-native-toast-message";
 import { Input } from "react-native-elements";
-import { useAppContext } from "../context/AppContext";
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+
+import auth from "@react-native-firebase/auth";
+import db from "@react-native-firebase/database";
 
 export const SignUpScreen = ({ navigation }) => {
-  const { auth, setAuth } = useAppContext();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleLogin = () => {
     navigation.navigate("Login");
   };
+
   const handleSignup = async () => {
-    await AsyncStorage.setItem("pass-manager-email", JSON.stringify(email));
-    await AsyncStorage.setItem(
-      "pass-manager-password",
-      JSON.stringify(password)
-    );
-    setAuth({
-      ...auth,
-      email,
-      password,
-    });
-    navigation.navigate("Login");
-    Toast.show({
-      type: "success",
-      text1: "Signup success",
-    });
+    setIsLoading(true);
+    try {
+      const response = await auth().createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      if (response.user) {
+        await db().ref(`/users/${response.user.uid}`).set({ email });
+      }
+      navigation.navigate("Login");
+      Toast.show({
+        type: "success",
+        text1: "Signup success",
+      });
+    } catch (error) {
+      console.log(error.message);
+      let errMessage = "Oops, please check your form and try again";
+      if (error.code === "auth/email-already-in-use") {
+        errMessage = "Email already exists";
+      } else if (error.code === "auth/invalid-email") {
+        errMessage = "Invalid email format";
+      } else if (error.code === "auth/weak-password") {
+        errMessage = "Weak password";
+      }
+      Toast.show({
+        type: "error",
+        text1: errMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -97,7 +120,8 @@ export const SignUpScreen = ({ navigation }) => {
             !password ||
             !confirmPassword ||
             emailError !== "" ||
-            passwordError !== ""
+            passwordError !== "" ||
+            isLoading
           }
           style={{
             width: "95%",
@@ -110,55 +134,26 @@ export const SignUpScreen = ({ navigation }) => {
               !password ||
               !confirmPassword ||
               emailError !== "" ||
-              passwordError !== ""
+              passwordError !== "" ||
+              isLoading
                 ? "grey"
                 : "#158CB6",
           }}
         >
-          <Text style={{ color: "white", fontSize: 16 }}>Sign Up</Text>
+          {isLoading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text style={{ color: "white", fontSize: 16 }}>Sign Up</Text>
+          )}
         </TouchableOpacity>
         <Text style={{ alignSelf: "center", marginTop: 10 }}>
           Already have an account?
           <Text style={{ color: "#158CB6" }} onPress={handleLogin}>
             {" "}
-            Sign In
+            Login
           </Text>
         </Text>
       </View>
-      {/* <Text
-        style={{
-          fontSize: 20,
-          fontWeight: 500,
-          color: "#158CB6",
-          marginBottom: 10,
-        }}
-      >
-        Setup your pin code
-      </Text>
-      <KeycodeInput
-        numeric
-        autoFocus
-        tintColor="#158CB6"
-        style={{ fontSize: 20, color: "#158CB6" }}
-        onComplete={(value) => setPin(value)}
-      />
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: 500,
-          color: "#158CB6",
-          marginTop: 20,
-        }}
-      >
-        Confirm Pin
-      </Text>
-      <KeycodeInput
-        numeric
-        tintColor="#158CB6"
-        autoFocus={false}
-        style={{ fontSize: 20, color: "#158CB6" }}
-        onComplete={(value) => handlePinSetup(value)}
-      /> */}
     </View>
   );
 };

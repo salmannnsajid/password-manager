@@ -2,18 +2,20 @@ import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import {
   View,
+  Text,
   TextInput,
   StyleSheet,
-  Text,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import db from "@react-native-firebase/database";
 
 export const EditScreen = ({ route, navigation }) => {
   const { item } = route.params;
 
-  const { globalState, setGlobalState } = useAppContext();
+  const { authData, setAuthData } = useAppContext();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     account: "",
@@ -47,21 +49,26 @@ export const EditScreen = ({ route, navigation }) => {
   };
 
   const handleSubmit = async () => {
-    try {
-      const updatedItems = globalState.map((it) => {
-        if (it.id === item.id) {
-          return { ...formData };
-        }
-        return item;
+    setIsLoading(true);
+    const updatedData = authData.records.map((it) => {
+      if (it.id === item.id) {
+        return { ...formData };
+      }
+      return item;
+    });
+    db()
+      .ref(`/users/${authData.uid}`)
+      .update({ records: updatedData })
+      .then(() => {
+        setAuthData({ ...authData, records: updatedData });
+        setFormData({ name: "", account: "", password: "", details: "" });
+        navigation.navigate("Home");
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        console.error("Error adding new record:", error);
       });
-      setGlobalState([...updatedItems]);
-
-      AsyncStorage.setItem("passwords-array", JSON.stringify(updatedItems));
-    } catch (error) {
-      console.log("Error storing data:", error);
-    }
-    setFormData({ name: "", account: "", password: "", details: "" });
-    navigation.navigate("Home");
   };
 
   return (
@@ -102,15 +109,25 @@ export const EditScreen = ({ route, navigation }) => {
           borderRadius: 10,
           alignItems: "center",
           backgroundColor:
-            !validation.name || !validation.account || !validation.password
+            !validation.name ||
+            !validation.account ||
+            !validation.password ||
+            isLoading
               ? "grey"
               : "#158CB6",
         }}
         disabled={
-          !validation.name || !validation.account || !validation.password
+          !validation.name ||
+          !validation.account ||
+          !validation.password ||
+          isLoading
         }
       >
-        <Text style={{ color: "white" }}>Update</Text>
+        {isLoading ? (
+          <ActivityIndicator color="white" size="small" />
+        ) : (
+          <Text style={{ color: "white" }}>Update</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

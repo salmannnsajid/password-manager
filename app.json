@@ -1,8 +1,11 @@
 {
   "expo": {
     "name": "Password Manager",
-    "icon": "./assets/logo-2.jpg",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "plugins": [
+      "@react-native-firebase/app",
       [
         "expo-local-authentication",
         {
@@ -16,10 +19,7 @@
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/logo-2.jpg",
-        "backgroundColor": "#FFFFFF"
-      },
+      "googleServicesFile": "google-services.json",
       "package": "com.salman1234567890.passwordmanager"
     }
   }

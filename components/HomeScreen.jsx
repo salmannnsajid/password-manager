@@ -1,26 +1,37 @@
 import React, { useState } from "react";
 import { SearchBar } from "react-native-elements";
+import db from "@react-native-firebase/database";
 import { useAppContext } from "../context/AppContext";
 import { DeleteConfirmationModal } from "./DeleteModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 
 export const HomeScreen = ({ navigation }) => {
-  const { globalState, setGlobalState } = useAppContext();
+  const { authData, setAuthData } = useAppContext();
 
   const [searchText, setSearchText] = useState("");
-  const [selectedData, setSelectedData] = useState(undefined);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedData, setSelectedData] = useState(undefined);
 
   const handleDelete = () => {
     try {
-      let data = [...globalState];
+      let data = [...authData.records];
       const updatedItems = data.filter((it) => it.id !== selectedData.id);
-
-      setGlobalState([...updatedItems]);
-      AsyncStorage.setItem("passwords-array", JSON.stringify(updatedItems));
-      setModalVisible(false);
+      setDeleteLoading(true);
+      db()
+        .ref(`/users/${authData.uid}`)
+        .update({ records: updatedItems })
+        .then(() => {
+          setAuthData({ ...authData, records: updatedItems });
+          setModalVisible(false);
+          setDeleteLoading(false);
+        })
+        .catch((error) => {
+          setDeleteLoading(false);
+          setModalVisible(false);
+          console.error("Error adding new record:", error);
+        });
     } catch (error) {
       console.log("Error storing data:", error);
     }
@@ -72,7 +83,7 @@ export const HomeScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  if (globalState.length === 0) {
+  if (!authData?.records?.length) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>No items exist</Text>
@@ -109,7 +120,7 @@ export const HomeScreen = ({ navigation }) => {
           }}
         >
           <FlatList
-            data={globalState
+            data={authData?.records
               .filter(
                 (item) =>
                   item.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -122,6 +133,7 @@ export const HomeScreen = ({ navigation }) => {
         </View>
       </View>
       <DeleteConfirmationModal
+        loading={deleteLoading}
         onDelete={handleDelete}
         visible={isModalVisible}
         onCancel={() => setModalVisible(false)}
@@ -129,9 +141,3 @@ export const HomeScreen = ({ navigation }) => {
     </>
   );
 };
-HomeScreen.navigationOptions = {
-  title: "Homeee",
-  headerRight: () => <>Yo</>,
-};
-
-console.log(HomeScreen);

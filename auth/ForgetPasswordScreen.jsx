@@ -1,37 +1,43 @@
 import React, { useState } from "react";
 import { Input } from "react-native-elements";
+import auth from "@react-native-firebase/auth";
 import Toast from "react-native-toast-message";
-import { useAppContext } from "../context/AppContext";
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { forgetPasswordError } from "../utils/helpers";
 
 export const ForgetPasswordScreen = ({ navigation }) => {
-  const { auth, setAuth } = useAppContext();
-
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleResetPassword = async () => {
-    const emailData = await AsyncStorage.getItem("pass-manager-email");
-    if (emailData !== null && JSON.parse(emailData) === email) {
-      await AsyncStorage.setItem(
-        "pass-manager-password",
-        JSON.stringify(password)
-      );
-      setAuth({ ...auth, password });
-      navigation.navigate("Login");
-      Toast.show({
-        type: "success",
-        text1: "Password reset success",
-      });
+  const handleForgetPassword = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Invalid email format");
     } else {
-      Toast.show({
-        type: "error",
-        text1: "No account found",
-      });
+      try {
+        setLoading(true);
+        await auth().sendPasswordResetEmail(email);
+        Toast.show({
+          type: "success",
+          text1: "Please check your email",
+        });
+        setLoading(false);
+        navigation.navigate("Login");
+      } catch (error) {
+        setLoading(false);
+        let errorMessage = forgetPasswordError(error);
+        Toast.show({
+          type: "error",
+          text1: errorMessage,
+        });
+      }
     }
   };
 
@@ -59,47 +65,15 @@ export const ForgetPasswordScreen = ({ navigation }) => {
           autoCapitalize="none"
           errorMessage={emailError}
           keyboardType="email-address"
-          onBlur={() => {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-              setEmailError("Invalid email format");
-            }
-          }}
           onChangeText={(text) => {
             setEmail(text);
             setEmailError("");
           }}
         />
-        <Input
-          placeholder="Enter New Password"
-          onChangeText={(text) => setPassword(text)}
-          value={password}
-          secureTextEntry
-        />
-        <Input
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          secureTextEntry
-          errorMessage={passwordError}
-          onChangeText={(text) => {
-            if (password !== text) {
-              setPasswordError("Password not matched");
-            } else {
-              setPasswordError("");
-            }
-            setConfirmPassword(text);
-          }}
-        />
 
         <TouchableOpacity
-          onPress={handleResetPassword}
-          disabled={
-            !email ||
-            !password ||
-            !confirmPassword ||
-            emailError !== "" ||
-            passwordError !== ""
-          }
+          onPress={handleForgetPassword}
+          disabled={!email || emailError !== "" || loading}
           style={{
             width: "95%",
             padding: 10,
@@ -107,16 +81,37 @@ export const ForgetPasswordScreen = ({ navigation }) => {
             alignSelf: "center",
             alignItems: "center",
             backgroundColor:
-              !email ||
-              !password ||
-              !confirmPassword ||
-              emailError !== "" ||
-              passwordError !== ""
-                ? "grey"
-                : "#158CB6",
+              !email || emailError !== "" || loading ? "grey" : "#158CB6",
           }}
         >
-          <Text style={{ color: "white", fontSize: 16 }}>Reset Password</Text>
+          {loading ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text style={{ color: "white", fontSize: 16 }}>
+              Request Reset Password
+            </Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            width: "95%",
+            padding: 10,
+            borderRadius: 4,
+            alignSelf: "center",
+            alignItems: "center",
+          }}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Text
+            style={{
+              color: "black",
+              fontSize: 18,
+              fontWeight: 600,
+              color: "#158CB6",
+            }}
+          >
+            Back to Login
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
