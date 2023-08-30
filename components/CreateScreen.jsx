@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import CryptoJS from "react-native-crypto-js";
 import db from "@react-native-firebase/database";
 
 export const CreateScreen = ({ navigation }) => {
@@ -41,17 +42,30 @@ export const CreateScreen = ({ navigation }) => {
   const handleSubmit = async () => {
     setIsLoading(true);
     const uniqueId = uuid.v4();
+
+    let encryptedPassword = CryptoJS.AES.encrypt(
+      formData.password,
+      process.env.EXPO_PUBLIC_SECRET_KEY
+    ).toString();
     let updatedData = [];
+    let updatedLocalData = [];
+    let encryptedFormData = { ...formData, password: encryptedPassword };
+
     if (authData?.records?.length) {
-      updatedData = [...authData.records, { ...formData, id: uniqueId }];
+      updatedData = [
+        ...authData.records,
+        { ...encryptedFormData, id: uniqueId },
+      ];
+      updatedLocalData = [...authData.records, { ...formData, id: uniqueId }];
     } else {
-      updatedData = [{ ...formData, id: uniqueId }];
+      updatedData = [{ ...encryptedFormData, id: uniqueId }];
+      updatedLocalData = [{ ...formData, id: uniqueId }];
     }
     db()
       .ref(`/users/${authData.uid}`)
       .update({ records: updatedData })
       .then(() => {
-        setAuthData({ ...authData, records: updatedData });
+        setAuthData({ ...authData, records: updatedLocalData });
         setFormData({ name: "", account: "", password: "", details: "" });
         navigation.navigate("Home");
         setIsLoading(false);

@@ -11,6 +11,7 @@ import {
 
 import auth from "@react-native-firebase/auth";
 import db from "@react-native-firebase/database";
+import { emailRegex } from "../utils/helpers";
 
 export const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -83,7 +84,6 @@ export const SignUpScreen = ({ navigation }) => {
           errorMessage={emailError}
           keyboardType="email-address"
           onBlur={() => {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
               setEmailError("Invalid email format");
             }

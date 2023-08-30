@@ -12,3 +12,5 @@ export const forgetPasswordError = (error) => {
   }
   return message;
 };
+
+export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

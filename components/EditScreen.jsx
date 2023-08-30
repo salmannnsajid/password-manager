@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import CryptoJS from "react-native-crypto-js";
 import db from "@react-native-firebase/database";
 
 export const EditScreen = ({ route, navigation }) => {
@@ -50,15 +51,28 @@ export const EditScreen = ({ route, navigation }) => {
 
   const handleSubmit = async () => {
     setIsLoading(true);
+
     const updatedData = authData.records.map((it) => {
       if (it.id === item.id) {
         return { ...formData };
       }
       return item;
     });
+    const updatedEncryptedData = authData.records.map((it) => {
+      if (it.id === item.id) {
+        return {
+          ...formData,
+          password: CryptoJS.AES.encrypt(
+            formData.password,
+            process.env.EXPO_PUBLIC_SECRET_KEY
+          ).toString(),
+        };
+      }
+      return item;
+    });
     db()
       .ref(`/users/${authData.uid}`)
-      .update({ records: updatedData })
+      .update({ records: updatedEncryptedData })
       .then(() => {
         setAuthData({ ...authData, records: updatedData });
         setFormData({ name: "", account: "", password: "", details: "" });

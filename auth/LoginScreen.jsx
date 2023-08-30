@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "react-native-elements";
 import Toast from "react-native-toast-message";
 import auth from "@react-native-firebase/auth";
-import db from "@react-native-firebase/database";
 import { useAppContext } from "../context/AppContext";
 import {
   View,
@@ -11,21 +10,46 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { emailRegex } from "../utils/helpers";
+import * as LocalAuthentication from "expo-local-authentication";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsBiometricAvailable } from "../hooks/useIsBiometricAvailable";
 
 export const LoginScreen = ({ navigation }) => {
   const { setAuthData } = useAppContext();
+  const allowFingerprint = useIsBiometricAvailable();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoginDataAvailable, setLoginDataAvailable] = useState(null);
 
-  const handleSignup = () => {
-    navigation.navigate("SignUp");
-  };
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const emailData = await AsyncStorage.getItem("pass-manager-email");
+        const passwordData = await AsyncStorage.getItem(
+          "pass-manager-password"
+        );
+
+        if (emailData !== null && passwordData !== null) {
+          setLoginDataAvailable({
+            email: JSON.parse(emailData),
+            password: JSON.parse(passwordData),
+          });
+        }
+      } catch (error) {
+        console.log("Error retrieving data:", error);
+      }
+    };
+
+    getData();
+  }, []);
+
+  console.log({ isLoginDataAvailable });
 
   const handleLogin = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError("Invalid email format");
       return;
@@ -33,21 +57,19 @@ export const LoginScreen = ({ navigation }) => {
     try {
       setIsLoading(true);
       const response = await auth().signInWithEmailAndPassword(email, password);
-      const userRef = db().ref(`users/${response.user.uid}`);
+      await AsyncStorage.setItem("pass-manager-email", JSON.stringify(email));
+      await AsyncStorage.setItem(
+        "pass-manager-password",
+        JSON.stringify(password)
+      );
 
-      const onDataChanged = (snapshot) => {
-        if (snapshot.exists()) {
-          setAuthData({
-            uid: response.user.uid,
-            email: response.user.email,
-            records: snapshot.val()?.records || [],
-          });
-          navigation.navigate("Root");
-          setIsLoading(false);
-        }
-      };
-
-      userRef.on("value", onDataChanged);
+      setAuthData({
+        uid: response.user.uid,
+        email: response.user.email,
+        records: [],
+      });
+      navigation.navigate("Root");
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
       let errMessage = "Oops, please check your form and try again";
@@ -61,6 +83,27 @@ export const LoginScreen = ({ navigation }) => {
         type: "error",
         text1: errMessage,
       });
+      setIsLoading(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    setIsLoading(true);
+
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate with your biometric",
+    });
+    if (result.success) {
+      const response = await auth().signInWithEmailAndPassword(
+        isLoginDataAvailable.email,
+        isLoginDataAvailable.password
+      );
+      setAuthData({
+        uid: response.user.uid,
+        email: response.user.email,
+        records: [],
+      });
+      navigation.navigate("Root");
       setIsLoading(false);
     }
   };
@@ -130,9 +173,32 @@ export const LoginScreen = ({ navigation }) => {
             <Text style={{ color: "white", fontSize: 16 }}>Login</Text>
           )}
         </TouchableOpacity>
+        {allowFingerprint && isLoginDataAvailable ? (
+          <TouchableOpacity
+            style={{
+              width: "95%",
+              padding: 10,
+              marginTop: 20,
+              borderRadius: 4,
+              alignSelf: "center",
+              alignItems: "center",
+              backgroundColor: "#158CB6",
+            }}
+            onPress={handleBiometricLogin}
+          >
+            <Text style={{ color: "white", fontSize: 16 }}>
+              Biometric Login
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          ""
+        )}
         <Text style={{ alignSelf: "center", marginTop: 10 }}>
           Don't have an account?
-          <Text style={{ color: "#158CB6" }} onPress={handleSignup}>
+          <Text
+            style={{ color: "#158CB6" }}
+            onPress={() => navigation.navigate("SignUp")}
+          >
             {" "}
             Sign Up
           </Text>

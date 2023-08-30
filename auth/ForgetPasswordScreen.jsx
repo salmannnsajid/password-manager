@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { forgetPasswordError } from "../utils/helpers";
+import { emailRegex, forgetPasswordError } from "../utils/helpers";
 
 export const ForgetPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -17,7 +17,6 @@ export const ForgetPasswordScreen = ({ navigation }) => {
   const [emailError, setEmailError] = useState("");
 
   const handleForgetPassword = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError("Invalid email format");
     } else {

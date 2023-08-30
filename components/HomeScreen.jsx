@@ -4,10 +4,19 @@ import db from "@react-native-firebase/database";
 import { useAppContext } from "../context/AppContext";
 import { DeleteConfirmationModal } from "./DeleteModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import CryptoJS from "react-native-crypto-js";
+import { useFetchUserRecords } from "../hooks/useFetchUserRecords";
 
 export const HomeScreen = ({ navigation }) => {
   const { authData, setAuthData } = useAppContext();
+  const isLoading = useFetchUserRecords(authData.uid);
 
   const [searchText, setSearchText] = useState("");
   const [isModalVisible, setModalVisible] = useState(false);
@@ -37,10 +46,6 @@ export const HomeScreen = ({ navigation }) => {
     }
   };
 
-  const handleEdit = (item) => {
-    navigation.navigate("Edit", { item });
-  };
-
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => navigation.navigate("Detail", { item })}>
       <View
@@ -62,7 +67,9 @@ export const HomeScreen = ({ navigation }) => {
         </View>
 
         <View style={{ flexDirection: "row" }}>
-          <TouchableOpacity onPress={() => handleEdit(item)}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Edit", { item })}
+          >
             <Icon
               name="edit"
               size={20}
@@ -83,7 +90,15 @@ export const HomeScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  if (!authData?.records?.length) {
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#158CB6" />
+        <Text>Fetching Data</Text>
+      </View>
+    );
+  }
+  if (!authData?.records?.length && !isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>No items exist</Text>
