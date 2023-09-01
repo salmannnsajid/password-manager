@@ -13,6 +13,7 @@ export default App = () => {
       await SplashScreen.hideAsync();
     }, 2000);
   }, []);
+
   return (
     <AppProvider>
       <NavigationContainer>
