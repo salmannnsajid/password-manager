@@ -32,8 +32,10 @@ export const SignUpScreen = ({ navigation }) => {
         email,
         password
       );
+      console.log(response.user);
       if (response.user) {
         await db().ref(`/users/${response.user.uid}`).set({ email });
+        await user.sendEmailVerification();
       }
       navigation.navigate("Login");
       Toast.show({

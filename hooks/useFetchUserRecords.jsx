@@ -12,19 +12,25 @@ export const useFetchUserRecords = (userUid) => {
     setIsLoading(true);
     const onDataChanged = (snapshot) => {
       if (snapshot.exists()) {
+        const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
+
         let decryptedRecordsArray = [];
         if (snapshot.val()?.records?.length) {
           decryptedRecordsArray = snapshot.val()?.records.map((item) => {
             return {
               ...item,
-              password: CryptoJS.AES.decrypt(
+              name: CryptoJS.AES.encrypt(item.name, secretKey).toString(),
+              account: CryptoJS.AES.encrypt(item.account, secretKey).toString(),
+              password: CryptoJS.AES.encrypt(
                 item.password,
-                process.env.EXPO_PUBLIC_SECRET_KEY
-              ).toString(CryptoJS.enc.Utf8),
+                secretKey
+              ).toString(),
             };
           });
         }
         setAuthData({ ...authData, records: decryptedRecordsArray });
+        setIsLoading(false);
+      } else {
         setIsLoading(false);
       }
     };

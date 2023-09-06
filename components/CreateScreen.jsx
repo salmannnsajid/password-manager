@@ -42,14 +42,16 @@ export const CreateScreen = ({ navigation }) => {
   const handleSubmit = async () => {
     setIsLoading(true);
     const uniqueId = uuid.v4();
+    const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
 
-    let encryptedPassword = CryptoJS.AES.encrypt(
-      formData.password,
-      process.env.EXPO_PUBLIC_SECRET_KEY
-    ).toString();
     let updatedData = [];
     let updatedLocalData = [];
-    let encryptedFormData = { ...formData, password: encryptedPassword };
+    let encryptedFormData = {
+      ...formData,
+      name: CryptoJS.AES.encrypt(formData.name, secretKey).toString(),
+      account: CryptoJS.AES.encrypt(formData.account, secretKey).toString(),
+      password: CryptoJS.AES.encrypt(formData.password, secretKey).toString(),
+    };
 
     if (authData?.records?.length) {
       updatedData = [

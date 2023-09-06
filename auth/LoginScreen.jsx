@@ -87,21 +87,24 @@ export const LoginScreen = ({ navigation }) => {
 
   const handleBiometricLogin = async () => {
     setIsLoading(true);
-
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: "Authenticate with your biometric",
-    });
-    if (result.success) {
-      const response = await auth().signInWithEmailAndPassword(
-        isLoginDataAvailable.email,
-        isLoginDataAvailable.password
-      );
-      setAuthData({
-        uid: response.user.uid,
-        email: response.user.email,
-        records: [],
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Authenticate with your biometric",
       });
-      navigation.navigate("Root");
+      if (result.success) {
+        const response = await auth().signInWithEmailAndPassword(
+          isLoginDataAvailable.email,
+          isLoginDataAvailable.password
+        );
+        setAuthData({
+          uid: response.user.uid,
+          email: response.user.email,
+          records: [],
+        });
+        navigation.navigate("Root");
+        setIsLoading(false);
+      }
+    } catch (error) {
       setIsLoading(false);
     }
   };

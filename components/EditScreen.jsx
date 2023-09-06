@@ -58,13 +58,16 @@ export const EditScreen = ({ route, navigation }) => {
       }
       return item;
     });
+    const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
     const updatedEncryptedData = authData.records.map((it) => {
       if (it.id === item.id) {
         return {
           ...formData,
+          name: CryptoJS.AES.encrypt(formData.name, secretKey).toString(),
+          account: CryptoJS.AES.encrypt(formData.account, secretKey).toString(),
           password: CryptoJS.AES.encrypt(
             formData.password,
-            process.env.EXPO_PUBLIC_SECRET_KEY
+            secretKey
           ).toString(),
         };
       }
