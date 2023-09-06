@@ -12,13 +12,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useFetchUserRecords } from "../hooks/useFetchUserRecords";
-import auth from "@react-native-firebase/auth";
 
 export const HomeScreen = ({ navigation }) => {
   const { authData, setAuthData } = useAppContext();
   const isLoading = useFetchUserRecords(authData.uid);
-
-  console.log(auth().currentUser);
 
   const [searchText, setSearchText] = useState("");
   const [isModalVisible, setModalVisible] = useState(false);

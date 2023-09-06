@@ -1,13 +1,16 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
+import auth from "@react-native-firebase/auth";
 import { Ionicons } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 export const LogoutButton = () => {
   const navigation = useNavigation();
 
   const handleLogout = () => {
-    navigation.navigate("Login");
+    auth()
+      .signOut()
+      .then(() => navigation.navigate("Login"));
   };
 
   return (

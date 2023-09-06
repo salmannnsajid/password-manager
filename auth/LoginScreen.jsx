@@ -55,6 +55,14 @@ export const LoginScreen = ({ navigation }) => {
     try {
       setIsLoading(true);
       const response = await auth().signInWithEmailAndPassword(email, password);
+      if (!response.user.emailVerified) {
+        Toast.show({
+          type: "error",
+          text1: "Please verify your email first",
+        });
+        setIsLoading(false);
+        return;
+      }
       await AsyncStorage.setItem("pass-manager-email", JSON.stringify(email));
       await AsyncStorage.setItem(
         "pass-manager-password",
