@@ -28,8 +28,14 @@ export const DetailScreen = ({ route }) => {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.label}>Detail:</Text>
-      <Text style={styles.infoText}>{item.details}</Text>
+      {item.details ? (
+        <>
+          <Text style={styles.label}>Detail:</Text>
+          <Text style={styles.infoText}>{item.details}</Text>
+        </>
+      ) : (
+        ""
+      )}
     </View>
   );
 };
