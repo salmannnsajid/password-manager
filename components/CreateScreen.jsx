@@ -55,7 +55,7 @@ export const CreateScreen = ({ navigation }) => {
 
     if (authData?.records?.length) {
       updatedData = [
-        ...authData.records,
+        ...authData.encryptedRecords,
         { ...encryptedFormData, id: uniqueId },
       ];
       updatedLocalData = [...authData.records, { ...formData, id: uniqueId }];
@@ -67,7 +67,11 @@ export const CreateScreen = ({ navigation }) => {
       .ref(`/users/${authData.uid}`)
       .update({ records: updatedData })
       .then(() => {
-        setAuthData({ ...authData, records: updatedLocalData });
+        setAuthData({
+          ...authData,
+          records: updatedLocalData,
+          encryptedRecords: updatedData,
+        });
         setFormData({ name: "", account: "", password: "", details: "" });
         navigation.navigate("Home");
         setIsLoading(false);

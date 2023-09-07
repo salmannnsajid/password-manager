@@ -105,6 +105,7 @@ export const HomeScreen = ({ navigation }) => {
     );
   }
 
+  // console.log(authData.records);
   return (
     <>
       <SearchBar

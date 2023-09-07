@@ -59,7 +59,7 @@ export const EditScreen = ({ route, navigation }) => {
       return item;
     });
     const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
-    const updatedEncryptedData = authData.records.map((it) => {
+    const updatedEncryptedData = authData.encryptedRecords.map((it) => {
       if (it.id === item.id) {
         return {
           ...formData,
@@ -77,7 +77,11 @@ export const EditScreen = ({ route, navigation }) => {
       .ref(`/users/${authData.uid}`)
       .update({ records: updatedEncryptedData })
       .then(() => {
-        setAuthData({ ...authData, records: updatedData });
+        setAuthData({
+          ...authData,
+          records: updatedData,
+          encryptedRecords: updatedData,
+        });
         setFormData({ name: "", account: "", password: "", details: "" });
         navigation.navigate("Home");
         setIsLoading(false);

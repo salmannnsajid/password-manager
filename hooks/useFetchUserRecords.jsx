@@ -19,16 +19,23 @@ export const useFetchUserRecords = (userUid) => {
           decryptedRecordsArray = snapshot.val()?.records.map((item) => {
             return {
               ...item,
-              name: CryptoJS.AES.encrypt(item.name, secretKey).toString(),
-              account: CryptoJS.AES.encrypt(item.account, secretKey).toString(),
-              password: CryptoJS.AES.encrypt(
-                item.password,
-                secretKey
-              ).toString(),
+              name: CryptoJS.AES.decrypt(item.name, secretKey).toString(
+                CryptoJS.enc.Utf8
+              ),
+              account: CryptoJS.AES.decrypt(item.account, secretKey).toString(
+                CryptoJS.enc.Utf8
+              ),
+              password: CryptoJS.AES.decrypt(item.password, secretKey).toString(
+                CryptoJS.enc.Utf8
+              ),
             };
           });
         }
-        setAuthData({ ...authData, records: decryptedRecordsArray });
+        setAuthData({
+          ...authData,
+          records: decryptedRecordsArray,
+          encryptedRecords: snapshot.val()?.records,
+        });
         setIsLoading(false);
       } else {
         setIsLoading(false);

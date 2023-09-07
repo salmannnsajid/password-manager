@@ -34,6 +34,8 @@ export const LoginScreen = ({ navigation }) => {
         );
 
         if (emailData !== null && passwordData !== null) {
+          setEmail(JSON.parse(emailData));
+          setPassword(JSON.parse(passwordData));
           setLoginDataAvailable({
             email: JSON.parse(emailData),
             password: JSON.parse(passwordData),
@@ -94,28 +96,33 @@ export const LoginScreen = ({ navigation }) => {
   };
 
   const handleBiometricLogin = async () => {
-    setIsLoading(true);
-    try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Authenticate with your biometric",
+    const { success, error } = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate with your biometric",
+    });
+    if (success) {
+      setIsLoading(true);
+      const response = await auth().signInWithEmailAndPassword(
+        isLoginDataAvailable.email,
+        isLoginDataAvailable.password
+      );
+      setAuthData({
+        uid: response.user.uid,
+        email: response.user.email,
+        records: [],
       });
-      if (result.success) {
-        const response = await auth().signInWithEmailAndPassword(
-          isLoginDataAvailable.email,
-          isLoginDataAvailable.password
-        );
-        setAuthData({
-          uid: response.user.uid,
-          email: response.user.email,
-          records: [],
-        });
-        navigation.navigate("Root");
-        setIsLoading(false);
-      }
-    } catch (error) {
+      navigation.navigate("Root");
       setIsLoading(false);
+    } else {
+      setIsLoading(false);
+      console.error("Authentication failed:", error);
     }
   };
+
+  useEffect(() => {
+    if (allowFingerprint && isLoginDataAvailable) {
+      handleBiometricLogin();
+    }
+  }, [allowFingerprint, isLoginDataAvailable]);
 
   return (
     <View
@@ -182,26 +189,6 @@ export const LoginScreen = ({ navigation }) => {
             <Text style={{ color: "white", fontSize: 16 }}>Login</Text>
           )}
         </TouchableOpacity>
-        {allowFingerprint && isLoginDataAvailable ? (
-          <TouchableOpacity
-            style={{
-              width: "95%",
-              padding: 10,
-              marginTop: 20,
-              borderRadius: 4,
-              alignSelf: "center",
-              alignItems: "center",
-              backgroundColor: "#158CB6",
-            }}
-            onPress={handleBiometricLogin}
-          >
-            <Text style={{ color: "white", fontSize: 16 }}>
-              Biometric Login
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          ""
-        )}
         <Text style={{ alignSelf: "center", marginTop: 10 }}>
           Don't have an account?
           <Text
