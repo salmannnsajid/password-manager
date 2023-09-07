@@ -11,11 +11,13 @@ import {
 } from "react-native";
 import CryptoJS from "react-native-crypto-js";
 import db from "@react-native-firebase/database";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 export const CreateScreen = ({ navigation }) => {
   const { authData, setAuthData } = useAppContext();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     account: "",
@@ -99,12 +101,26 @@ export const CreateScreen = ({ navigation }) => {
         onChangeText={(value) => handleChange("account", value)}
       />
       <Text style={styles.label}>Password:</Text>
-      <TextInput
-        style={styles.input}
-        value={formData.password}
-        placeholder="Enter password"
-        onChangeText={(value) => handleChange("password", value)}
-      />
+      <View style={{ flexDirection: "row" }}>
+        <TextInput
+          value={formData.password}
+          style={styles.passwordInput}
+          placeholder="Enter password"
+          secureTextEntry={!showPassword}
+          onChangeText={(value) => handleChange("password", value)}
+        />
+        <TouchableOpacity
+          style={styles.icon}
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          <Icon
+            size={20}
+            color="gray"
+            name={showPassword ? "eye" : "eye-slash"}
+          />
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.label}>Detail:</Text>
       <TextInput
         multiline
@@ -168,5 +184,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#ccc",
     paddingBottom: 4,
+  },
+  passwordInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+    paddingBottom: 4,
+  },
+  icon: {
+    position: "absolute",
+    right: 0,
   },
 });

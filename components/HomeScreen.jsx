@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { SearchBar } from "react-native-elements";
 import db from "@react-native-firebase/database";
 import { useAppContext } from "../context/AppContext";

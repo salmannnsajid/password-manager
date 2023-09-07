@@ -12,6 +12,7 @@ import { ForgetPasswordScreen } from "../auth/ForgetPasswordScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { LogoutButton } from "../components/LogoutButton";
+import { SettingsScreen } from "../components/SettingsScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -26,6 +27,8 @@ function Root() {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Add") {
             iconName = focused ? "add-circle" : "add-circle-outline";
+          } else if (route.name === "Settings") {
+            iconName = focused ? "settings" : "settings-outline";
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -52,6 +55,21 @@ function Root() {
         component={CreateScreen}
         options={{
           title: "Create",
+          headerStyle: {
+            backgroundColor: "#158CB6",
+          },
+          headerTintColor: "white",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+          headerRight: () => <LogoutButton />,
+        }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          title: "Settings",
           headerStyle: {
             backgroundColor: "#158CB6",
           },
