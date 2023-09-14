@@ -14,9 +14,10 @@ export const useFetchUserRecords = (userUid) => {
       if (snapshot.exists()) {
         const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
 
+        let recordsData = snapshot.val().records || [];
         let decryptedRecordsArray = [];
-        if (snapshot.val()?.records?.length) {
-          decryptedRecordsArray = snapshot.val()?.records.map((item) => {
+        if (recordsData.length) {
+          decryptedRecordsArray = recordsData.map((item) => {
             return {
               ...item,
               name: CryptoJS.AES.decrypt(item.name, secretKey).toString(
@@ -31,10 +32,11 @@ export const useFetchUserRecords = (userUid) => {
             };
           });
         }
+
         setAuthData({
           ...authData,
+          encryptedRecords: recordsData,
           records: decryptedRecordsArray,
-          encryptedRecords: snapshot.val()?.records,
         });
         setIsLoading(false);
       } else {

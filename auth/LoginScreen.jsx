@@ -2,18 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Input } from "react-native-elements";
 import Toast from "react-native-toast-message";
 import auth from "@react-native-firebase/auth";
-import { useAppContext } from "../context/AppContext";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
 import { emailRegex } from "../utils/helpers";
+import { useAppContext } from "../context/AppContext";
 import * as LocalAuthentication from "expo-local-authentication";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsBiometricAvailable } from "../hooks/useIsBiometricAvailable";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export const LoginScreen = ({ navigation }) => {
   const { setAuthData } = useAppContext();
@@ -35,7 +30,6 @@ export const LoginScreen = ({ navigation }) => {
 
         if (emailData !== null && passwordData !== null) {
           setEmail(JSON.parse(emailData));
-          setPassword(JSON.parse(passwordData));
           setLoginDataAvailable({
             email: JSON.parse(emailData),
             password: JSON.parse(passwordData),
@@ -76,6 +70,7 @@ export const LoginScreen = ({ navigation }) => {
         email: response.user.email,
         records: [],
       });
+      setPassword("");
       navigation.navigate("Root");
       setIsLoading(false);
     } catch (error) {
@@ -110,6 +105,7 @@ export const LoginScreen = ({ navigation }) => {
         email: response.user.email,
         records: [],
       });
+      setPassword("");
       navigation.navigate("Root");
       setIsLoading(false);
     } else {
@@ -133,6 +129,7 @@ export const LoginScreen = ({ navigation }) => {
         backgroundColor: "white",
       }}
     >
+      <LoadingSpinner isLoading={isLoading} />
       <Image
         style={{
           width: 150,
@@ -183,11 +180,7 @@ export const LoginScreen = ({ navigation }) => {
                 : "#158CB6",
           }}
         >
-          {isLoading ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : (
-            <Text style={{ color: "white", fontSize: 16 }}>Login</Text>
-          )}
+          <Text style={{ color: "white", fontSize: 16 }}>Login</Text>
         </TouchableOpacity>
         <Text style={{ alignSelf: "center", marginTop: 10 }}>
           Don't have an account?

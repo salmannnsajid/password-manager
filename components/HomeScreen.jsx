@@ -105,7 +105,6 @@ export const HomeScreen = ({ navigation }) => {
     );
   }
 
-  // console.log(authData.records);
   return (
     <>
       <SearchBar
@@ -135,7 +134,7 @@ export const HomeScreen = ({ navigation }) => {
           }}
         >
           <FlatList
-            data={authData?.records
+            data={authData.records
               .filter(
                 (item) =>
                   item.name.toLowerCase().includes(searchText.toLowerCase()) ||

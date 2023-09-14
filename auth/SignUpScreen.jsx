@@ -1,17 +1,12 @@
 import React, { useState } from "react";
 import { Input } from "react-native-elements";
 import Toast from "react-native-toast-message";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 
 import auth from "@react-native-firebase/auth";
 import db from "@react-native-firebase/database";
 import { emailRegex } from "../utils/helpers";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -70,6 +65,7 @@ export const SignUpScreen = ({ navigation }) => {
         backgroundColor: "white",
       }}
     >
+      <LoadingSpinner isLoading={isLoading} />
       <Image
         style={{
           width: 150,
@@ -142,11 +138,7 @@ export const SignUpScreen = ({ navigation }) => {
                 : "#158CB6",
           }}
         >
-          {isLoading ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : (
-            <Text style={{ color: "white", fontSize: 16 }}>Sign Up</Text>
-          )}
+          <Text style={{ color: "white", fontSize: 16 }}>Sign Up</Text>
         </TouchableOpacity>
         <Text style={{ alignSelf: "center", marginTop: 10 }}>
           Already have an account?

@@ -2,14 +2,9 @@ import React, { useState } from "react";
 import { Input } from "react-native-elements";
 import auth from "@react-native-firebase/auth";
 import Toast from "react-native-toast-message";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import { emailRegex, forgetPasswordError } from "../utils/helpers";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export const ForgetPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -49,6 +44,7 @@ export const ForgetPasswordScreen = ({ navigation }) => {
         backgroundColor: "white",
       }}
     >
+      <LoadingSpinner isLoading={loading} />
       <Image
         style={{
           width: 150,
@@ -83,13 +79,9 @@ export const ForgetPasswordScreen = ({ navigation }) => {
               !email || emailError !== "" || loading ? "grey" : "#158CB6",
           }}
         >
-          {loading ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : (
-            <Text style={{ color: "white", fontSize: 16 }}>
-              Request Reset Password
-            </Text>
-          )}
+          <Text style={{ color: "white", fontSize: 16 }}>
+            Request Reset Password
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
