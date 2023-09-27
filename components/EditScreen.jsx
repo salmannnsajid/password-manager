@@ -54,27 +54,29 @@ export const EditScreen = ({ route, navigation }) => {
   const handleSubmit = async () => {
     setIsLoading(true);
 
+    const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
+
+    let encryptedFormData = {
+      ...formData,
+      name: CryptoJS.AES.encrypt(formData.name, secretKey).toString(),
+      account: CryptoJS.AES.encrypt(formData.account, secretKey).toString(),
+      password: CryptoJS.AES.encrypt(formData.password, secretKey).toString(),
+    };
+
     const updatedData = authData.records.map((it) => {
       if (it.id === item.id) {
         return { ...formData };
       }
-      return item;
+      return it;
     });
-    const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
+
     const updatedEncryptedData = authData.encryptedRecords.map((it) => {
       if (it.id === item.id) {
-        return {
-          ...formData,
-          name: CryptoJS.AES.encrypt(formData.name, secretKey).toString(),
-          account: CryptoJS.AES.encrypt(formData.account, secretKey).toString(),
-          password: CryptoJS.AES.encrypt(
-            formData.password,
-            secretKey
-          ).toString(),
-        };
+        return { ...encryptedFormData };
       }
-      return item;
+      return it;
     });
+
     db()
       .ref(`/users/${authData.uid}`)
       .update({ records: updatedEncryptedData })
@@ -82,7 +84,7 @@ export const EditScreen = ({ route, navigation }) => {
         setAuthData({
           ...authData,
           records: updatedData,
-          encryptedRecords: updatedData,
+          encryptedRecords: updatedEncryptedData,
         });
         setFormData({ name: "", account: "", password: "", details: "" });
         navigation.navigate("Home");

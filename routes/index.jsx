@@ -1,6 +1,5 @@
 import React from "react";
 import { StatusBar } from "react-native";
-import { AuthScreen } from "../auth/Auth";
 import { LoginScreen } from "../auth/LoginScreen";
 import { SignUpScreen } from "../auth/SignUpScreen";
 import { HomeScreen } from "../components/HomeScreen";
@@ -119,11 +118,6 @@ export const Navigation = () => {
     <>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
       <Stack.Navigator>
-        <Stack.Screen
-          name="Auth"
-          component={AuthScreen}
-          options={{ headerShown: false }}
-        />
         <Stack.Screen
           name="Login"
           component={LoginScreen}

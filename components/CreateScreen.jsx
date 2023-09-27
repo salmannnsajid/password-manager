@@ -46,7 +46,7 @@ export const CreateScreen = ({ navigation }) => {
     const uniqueId = uuid.v4();
     const secretKey = process.env.EXPO_PUBLIC_SECRET_KEY;
 
-    let updatedData = [];
+    let updatedEncryptedData = [];
     let updatedLocalData = [];
     let encryptedFormData = {
       ...formData,
@@ -56,23 +56,23 @@ export const CreateScreen = ({ navigation }) => {
     };
 
     if (authData?.records?.length) {
-      updatedData = [
+      updatedEncryptedData = [
         ...authData.encryptedRecords,
         { ...encryptedFormData, id: uniqueId },
       ];
       updatedLocalData = [...authData.records, { ...formData, id: uniqueId }];
     } else {
-      updatedData = [{ ...encryptedFormData, id: uniqueId }];
+      updatedEncryptedData = [{ ...encryptedFormData, id: uniqueId }];
       updatedLocalData = [{ ...formData, id: uniqueId }];
     }
     db()
       .ref(`/users/${authData.uid}`)
-      .update({ records: updatedData })
+      .update({ records: updatedEncryptedData })
       .then(() => {
         setAuthData({
           ...authData,
           records: updatedLocalData,
-          encryptedRecords: updatedData,
+          encryptedRecords: updatedEncryptedData,
         });
         setFormData({ name: "", account: "", password: "", details: "" });
         navigation.navigate("Home");
